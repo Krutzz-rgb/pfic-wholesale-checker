@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PFIC Wholesale Checker</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1b1f24; --mute:#5d6672; --line:#e2e5ea; --accent:#1f6feb; --ok:#1a7f4b; --warn:#b36b00; --bad:#c62828; --grey:#6b7280; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#111418; --card:#1a1f26; --ink:#e8ebef; --mute:#9aa4b0; --line:#2b323b; --accent:#5b9dff; --ok:#4cc38a; --warn:#e0a040; --bad:#ff6b6b; --grey:#9aa4b0; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  main { max-width:1000px; margin:0 auto; padding:24px 16px 80px; }
+  h1 { font-size:22px; margin:0 0 4px; } .sub { color:var(--mute); margin:0 0 20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:14px; }
+  .card h2 { font-size:15px; margin:0 0 10px; }
+  label { display:block; font-size:13px; color:var(--mute); margin:8px 0 3px; }
+  input[type=password], input[type=number], select, input[type=file] { width:100%; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); font:inherit; }
+  .row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; }
+  .chk { display:flex; gap:8px; align-items:flex-start; margin:8px 0; font-size:14px; color:var(--ink); }
+  .chk input { margin-top:4px; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:10px 16px; font:inherit; font-weight:600; cursor:pointer; }
+  button.sec { background:transparent; color:var(--accent); border:1px solid var(--accent); }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+  details summary { cursor:pointer; color:var(--accent); font-size:14px; margin-top:6px; }
+  #log { font-size:13px; color:var(--mute); white-space:pre-wrap; min-height:20px; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--mute); font-weight:600; }
+  .chip { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:700; color:#fff; }
+  .PROMISING { background:var(--ok); } .MAYBE { background:var(--warn); } .HOLD { background:var(--grey); } .REJECT { background:var(--bad); }
+  .stats { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px; }
+  .stat { border:1px solid var(--line); border-radius:10px; padding:8px 12px; min-width:110px; }
+  .stat b { display:block; font-size:20px; }
+  pre.note { white-space:pre-wrap; font:13px/1.45 ui-monospace,Menlo,Consolas,monospace; background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:10px; margin:6px 0 0; }
+  .warn { color:var(--warn); font-size:13px; }
+  .small { font-size:12.5px; color:var(--mute); }
+</style>
+</head>
+<body>
+<main>
+  <h1>PFIC Wholesale Checker</h1>
+  <p class="sub">Upload the student's Excel sheet → Keepa checks → notes written into <b>Coach Notes</b> → download a new reviewed copy. Never approves a purchase.</p>
+
+  <div class="card">
+    <h2>1. Settings</h2>
+    <div class="row">
+      <div><label for="pw">Team password</label><input id="pw" type="password" autocomplete="off"></div>
+      <div><label for="vat">Student VAT status</label>
+        <select id="vat"><option value="unknown">Unknown (profit stays UNVERIFIED)</option><option value="yes">VAT registered (costs entered ex-VAT)</option><option value="no">Not VAT registered (costs entered inc-VAT)</option></select></div>
+    </div>
+    <div class="chk"><input type="checkbox" id="deep"><label for="deep" style="margin:0;color:inherit">Deep seller data – counts FBA sellers (W05/W22). Uses noticeably more Keepa tokens.</label></div>
+    <div class="chk"><input type="checkbox" id="skip"><label for="skip" style="margin:0;color:inherit">Skip Keepa (sheet-only review – all Keepa checks show UNVERIFIED)</label></div>
+    <details><summary>Screening thresholds</summary>
+      <div class="row">
+        <div><label>Min units/mo (W02)</label><input id="t_minUnits" type="number" value="30"></div>
+        <div><label>Max 90d price drop % (W04)</label><input id="t_maxPriceDrop" type="number" value="15"></div>
+        <div><label>Third-party Buy Box min % (W06) *</label><input id="t_bbThirdPartyMin" type="number" value="20"></div>
+        <div><label>Amazon share fail at % (W07) *</label><input id="t_amazonDominantMax" type="number" value="80"></div>
+        <div><label>Returns/damage allowance % *</label><input id="t_allowancePct" type="number" value="2"></div>
+        <div><label>Min margin % (W18)</label><input id="t_minMargin" type="number" value="15"></div>
+        <div><label>Min ROI % (W19)</label><input id="t_minRoi" type="number" value="30"></div>
+        <div><label>Min profit £ (W20)</label><input id="t_minProfit" type="number" value="3"></div>
+      </div>
+      <p class="small">* Not set in the PFIC checklist – tool defaults, calibrate against real winners/losers.</p>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>2. Student spreadsheet</h2>
+    <input id="file" type="file" accept=".xlsx">
+    <p class="small">Google Sheet → File → Download → Microsoft Excel (.xlsx). Needs an <b>ASIN</b> column and a <b>Coach Notes</b> column. Your original file is never changed.</p>
+    <div class="actions"><button id="run" disabled>Run review</button></div>
+    <div id="log"></div>
+  </div>
+
+  <div class="card" id="results" hidden>
+    <h2>3. Results</h2>
+    <div class="stats" id="stats"></div>
+    <div class="actions" style="margin:0 0 10px"><button id="dl">Download reviewed .xlsx</button><button class="sec" id="dlcsv">Download summary .csv</button></div>
+    <table><thead><tr><th>Sheet / row</th><th>ASIN · product</th><th>Verdict</th><th>Score</th><th>Open the note</th></tr></thead><tbody id="rows"></tbody></table>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="analysis.js"></script>
+<script src="sheet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
